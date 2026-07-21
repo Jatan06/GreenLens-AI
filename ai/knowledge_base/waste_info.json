@@ -1,0 +1,82 @@
+{
+  "battery": {
+    "category": "Hazardous",
+    "bin": "Red",
+    "reward": 20,
+    "carbon_saved": "0.40 kg",
+    "description": "Contains hazardous chemicals.",
+    "can_become": "Recovered metals"
+  },
+  "can": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 8,
+    "carbon_saved": "0.25 kg",
+    "description": "Aluminum cans are highly recyclable.",
+    "can_become": "New aluminum products"
+  },
+  "cardboard": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 6,
+    "carbon_saved": "0.15 kg",
+    "description": "Can be recycled into paper products.",
+    "can_become": "Paper"
+  },
+  "drink carton": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 5,
+    "carbon_saved": "0.12 kg",
+    "description": "Separate plastic and paper layers.",
+    "can_become": "Paper products"
+  },
+  "glass bottle": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 10,
+    "carbon_saved": "0.20 kg",
+    "description": "Glass can be recycled indefinitely.",
+    "can_become": "New glass bottles"
+  },
+  "paper": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 4,
+    "carbon_saved": "0.10 kg",
+    "description": "Recycle clean paper only.",
+    "can_become": "Recycled paper"
+  },
+  "plastic bag": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 5,
+    "carbon_saved": "0.08 kg",
+    "description": "Avoid mixing with organic waste.",
+    "can_become": "Plastic pellets"
+  },
+  "plastic bottle": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 10,
+    "carbon_saved": "0.18 kg",
+    "description": "PET bottles are widely recyclable.",
+    "can_become": "Polyester fiber"
+  },
+  "plastic bottle cap": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 2,
+    "carbon_saved": "0.02 kg",
+    "description": "Recycle with plastic items.",
+    "can_become": "Plastic products"
+  },
+  "pop tab": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 2,
+    "carbon_saved": "0.01 kg",
+    "description": "Made from aluminum.",
+    "can_become": "Aluminum products"
+  }
+}
