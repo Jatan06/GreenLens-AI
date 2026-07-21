@@ -26,7 +26,8 @@ def predict(image_path):
     overall = {
         "total_items": 0,
         "total_reward": 0,
-        "total_carbon_saved": 0.0
+        "total_carbon_saved": 0.0,
+        "eco_score": 0
     }
     summary = {}
     for result in results:
@@ -42,18 +43,33 @@ def predict(image_path):
             detections.append({
                 "name": class_name,
                 "confidence": confidence,
+
                 "bounding_box": {
                     "x1": round(x1, 2),
                     "y1": round(y1, 2),
                     "x2": round(x2, 2),
                     "y2": round(y2, 2)
-                },  
+                },
+
                 "category": info["category"],
+                "subcategory": info.get("subcategory", ""),
+                "material": info.get("material", ""),
+
                 "bin": info["bin"],
+
                 "reward": info["reward"],
+
+                "eco_score": info.get("eco_score", 50),
+
                 "carbon_saved": info["carbon_saved"],
+
                 "description": info["description"],
-                "can_become": info["can_become"],
+
+                "can_become": info.get("can_become", []),
+
+                "tips": info.get("tips", []),
+
+                "decomposition_time": info.get("decomposition_time", "")
             })
 
             if class_name not in summary:
@@ -70,7 +86,9 @@ def predict(image_path):
             overall["total_items"] += 1
             overall["total_reward"] += info["reward"]
             overall["total_carbon_saved"] += carbon
-
+            overall["eco_score"] += info.get("eco_score", 50)
+            if overall["total_items"] > 0:
+                overall["eco_score"] = round(overall["eco_score"] / overall["total_items"])
     return {
         "overall": overall,
         "summary": summary,

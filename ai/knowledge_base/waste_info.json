@@ -4,79 +4,377 @@
     "bin": "Red",
     "reward": 20,
     "carbon_saved": "0.40 kg",
-    "description": "Contains hazardous chemicals.",
-    "can_become": "Recovered metals"
+    "eco_score": 85,
+    "description": "Contains hazardous chemicals like lead and acid.",
+    "can_become": ["Recovered metals", "Remanufactured batteries"],
+    "tips": ["Never throw in regular bin", "Take to designated hazardous drop-off"],
+    "decomposition_time": "100+ years"
   },
   "can": {
     "category": "Recyclable",
     "bin": "Blue",
     "reward": 8,
     "carbon_saved": "0.25 kg",
-    "description": "Aluminum cans are highly recyclable.",
-    "can_become": "New aluminum products"
+    "eco_score": 88,
+    "description": "Aluminum cans are highly recyclable and save 95% energy vs new production.",
+    "can_become": ["New aluminum cans", "Auto parts", "Bicycle frames"],
+    "tips": ["Rinse before recycling", "Crush to save space"],
+    "decomposition_time": "80–200 years"
   },
   "cardboard": {
     "category": "Recyclable",
     "bin": "Blue",
     "reward": 6,
     "carbon_saved": "0.15 kg",
-    "description": "Can be recycled into paper products.",
-    "can_become": "Paper"
+    "eco_score": 80,
+    "description": "Corrugated cardboard is one of the most recycled materials.",
+    "can_become": ["Recycled paper", "New cardboard boxes", "Packing material"],
+    "tips": ["Break down boxes flat", "Keep dry", "Remove tape if possible"],
+    "decomposition_time": "2 months"
   },
   "drink carton": {
     "category": "Recyclable",
     "bin": "Blue",
     "reward": 5,
     "carbon_saved": "0.12 kg",
-    "description": "Separate plastic and paper layers.",
-    "can_become": "Paper products"
+    "eco_score": 72,
+    "description": "Tetra packs contain layers of plastic, paper, and aluminum.",
+    "can_become": ["Roof tiles", "Paper products", "Plastic lumber"],
+    "tips": ["Rinse and flatten", "Separate layers if possible"],
+    "decomposition_time": "100+ years"
   },
   "glass bottle": {
     "category": "Recyclable",
     "bin": "Blue",
     "reward": 10,
     "carbon_saved": "0.20 kg",
-    "description": "Glass can be recycled indefinitely.",
-    "can_become": "New glass bottles"
+    "eco_score": 92,
+    "description": "Glass can be recycled indefinitely without quality loss.",
+    "can_become": ["New glass bottles", "Fiberglass insulation", "Glass tiles"],
+    "tips": ["Remove lids", "Rinse before dropping", "Separate by color if possible"],
+    "decomposition_time": "1 million years"
   },
   "paper": {
     "category": "Recyclable",
     "bin": "Blue",
     "reward": 4,
     "carbon_saved": "0.10 kg",
-    "description": "Recycle clean paper only.",
-    "can_become": "Recycled paper"
+    "eco_score": 75,
+    "description": "Paper can be recycled up to 7 times before fibers break down.",
+    "can_become": ["Recycled paper", "Toilet paper", "Egg cartons"],
+    "tips": ["Keep dry and clean", "Remove staples and clips", "Do not recycle greasy paper"],
+    "decomposition_time": "2–6 weeks"
   },
   "plastic bag": {
     "category": "Recyclable",
     "bin": "Blue",
     "reward": 5,
     "carbon_saved": "0.08 kg",
-    "description": "Avoid mixing with organic waste.",
-    "can_become": "Plastic pellets"
+    "eco_score": 60,
+    "description": "Soft plastics must be kept separate from hard plastics.",
+    "can_become": ["Plastic pellets", "Composite lumber", "New bags"],
+    "tips": ["Do not put loose in recycling bin", "Bundle together", "Return to store drop-off"],
+    "decomposition_time": "10–1000 years"
   },
   "plastic bottle": {
     "category": "Recyclable",
+    "subcategory": "Plastic",
+    "material": "PET",
     "bin": "Blue",
     "reward": 10,
     "carbon_saved": "0.18 kg",
-    "description": "PET bottles are widely recyclable.",
-    "can_become": "Polyester fiber"
+    "eco_score": 90,
+    "description": "PET bottles are among the most widely recycled plastics in India.",
+    "can_become": ["Polyester fiber", "New plastic bottles", "T-Shirts", "Fleece jackets"],
+    "tips": ["Rinse before recycling", "Remove the cap if possible", "Do not crush completely"],
+    "decomposition_time": "450 years"
   },
   "plastic bottle cap": {
     "category": "Recyclable",
+    "subcategory": "Plastic",
+    "material": "HDPE",
     "bin": "Blue",
     "reward": 2,
     "carbon_saved": "0.02 kg",
-    "description": "Recycle with plastic items.",
-    "can_become": "Plastic products"
+    "eco_score": 75,
+    "description": "HDPE caps are recyclable but check with your local facility.",
+    "can_become": ["Plastic containers", "Pipes", "Garden furniture"],
+    "tips": ["Keep with bottle if local recycling accepts it"],
+    "decomposition_time": "400 years"
   },
   "pop tab": {
     "category": "Recyclable",
     "bin": "Blue",
     "reward": 2,
     "carbon_saved": "0.01 kg",
-    "description": "Made from aluminum.",
-    "can_become": "Aluminum products"
+    "eco_score": 70,
+    "description": "Aluminum pull tabs from cans are 100% recyclable.",
+    "can_become": ["Aluminum products"],
+    "tips": ["Collect in a tin can before recycling"],
+    "decomposition_time": "80–200 years"
+  },
+  "newspaper": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 3,
+    "carbon_saved": "0.08 kg",
+    "eco_score": 78,
+    "description": "Newspapers are easily recyclable into new newsprint.",
+    "can_become": ["New newsprint", "Packing paper", "Egg cartons"],
+    "tips": ["Keep dry", "Bundle with string or in paper bag"],
+    "decomposition_time": "6 weeks"
+  },
+  "steel can": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 7,
+    "carbon_saved": "0.22 kg",
+    "eco_score": 85,
+    "description": "Steel is the most recycled material in the world.",
+    "can_become": ["New steel products", "Car parts", "Construction materials"],
+    "tips": ["Rinse thoroughly", "Labels can stay on"],
+    "decomposition_time": "50–100 years"
+  },
+  "banana peel": {
+    "category": "Compostable",
+    "bin": "Green",
+    "reward": 3,
+    "carbon_saved": "0.05 kg",
+    "eco_score": 95,
+    "description": "Banana peels are rich in potassium and break down quickly.",
+    "can_become": ["Compost", "Fertilizer", "Biogas"],
+    "tips": ["Add to compost bin", "Can be used directly as garden fertilizer"],
+    "decomposition_time": "2–5 weeks"
+  },
+  "food waste": {
+    "category": "Compostable",
+    "bin": "Green",
+    "reward": 4,
+    "carbon_saved": "0.07 kg",
+    "eco_score": 95,
+    "description": "Organic food waste can be composted into nutrient-rich soil amendment.",
+    "can_become": ["Compost", "Biogas", "Fertilizer"],
+    "tips": ["Separate from dry waste", "Avoid meat/dairy in home compost", "Use dedicated green bin"],
+    "decomposition_time": "1–6 months"
+  },
+  "coffee grounds": {
+    "category": "Compostable",
+    "bin": "Green",
+    "reward": 2,
+    "carbon_saved": "0.03 kg",
+    "eco_score": 92,
+    "description": "Coffee grounds are nitrogen-rich and excellent for compost.",
+    "can_become": ["Compost", "Garden fertilizer", "Mushroom substrate"],
+    "tips": ["Add directly to garden soil", "Mix with brown compost materials"],
+    "decomposition_time": "3 months"
+  },
+  "fruit peels": {
+    "category": "Compostable",
+    "bin": "Green",
+    "reward": 3,
+    "carbon_saved": "0.04 kg",
+    "eco_score": 95,
+    "description": "Fruit peels add valuable nutrients to compost.",
+    "can_become": ["Compost", "Fertilizer", "Natural dye"],
+    "tips": ["Chop finely to speed decomposition", "Avoid citrus in worm bins"],
+    "decomposition_time": "1–6 months"
+  },
+  "tea bag": {
+    "category": "Compostable",
+    "bin": "Green",
+    "reward": 1,
+    "carbon_saved": "0.01 kg",
+    "eco_score": 80,
+    "description": "Paper tea bags are compostable; remove staples.",
+    "can_become": ["Compost", "Fertilizer"],
+    "tips": ["Check if bag is plastic-free before composting", "Remove staple"],
+    "decomposition_time": "2–6 months"
+  },
+  "leaves": {
+    "category": "Compostable",
+    "bin": "Green",
+    "reward": 2,
+    "carbon_saved": "0.03 kg",
+    "eco_score": 96,
+    "description": "Dried leaves are ideal 'brown' materials for composting.",
+    "can_become": ["Leaf mulch", "Compost", "Soil conditioner"],
+    "tips": ["Shred for faster breakdown", "Mix with nitrogen-rich 'green' materials"],
+    "decomposition_time": "1–2 years if whole, faster if shredded"
+  },
+  "mobile phone": {
+    "category": "E-Waste",
+    "bin": "Black",
+    "reward": 50,
+    "carbon_saved": "1.20 kg",
+    "eco_score": 90,
+    "description": "Smartphones contain gold, silver, copper, and rare earth metals.",
+    "can_become": ["Recovered gold & silver", "Recycled circuit boards", "Refurbished devices"],
+    "tips": ["Wipe data before disposal", "Take to authorized e-waste center", "Consider selling/donating if working"],
+    "decomposition_time": "1000+ years"
+  },
+  "laptop": {
+    "category": "E-Waste",
+    "bin": "Black",
+    "reward": 100,
+    "carbon_saved": "3.50 kg",
+    "eco_score": 90,
+    "description": "Laptops contain lithium batteries, precious metals, and toxic materials.",
+    "can_become": ["Recovered metals", "Refurbished components", "Recycled plastics"],
+    "tips": ["Wipe data before disposal", "Remove and separately dispose of battery", "Take to authorized e-waste facility"],
+    "decomposition_time": "1000+ years"
+  },
+  "keyboard": {
+    "category": "E-Waste",
+    "bin": "Black",
+    "reward": 15,
+    "carbon_saved": "0.45 kg",
+    "eco_score": 70,
+    "description": "Keyboards contain plastics and circuit boards that need proper disposal.",
+    "can_become": ["Recycled plastics", "Metal components"],
+    "tips": ["Do not discard in regular bin", "Take to e-waste collection point"],
+    "decomposition_time": "500+ years"
+  },
+  "charger": {
+    "category": "E-Waste",
+    "bin": "Black",
+    "reward": 10,
+    "carbon_saved": "0.30 kg",
+    "eco_score": 72,
+    "description": "Chargers contain copper wiring and plastic insulation.",
+    "can_become": ["Recovered copper", "Recycled plastics"],
+    "tips": ["Bundle cables neatly", "Take to e-waste facility or retailer take-back program"],
+    "decomposition_time": "200+ years"
+  },
+  "headphones": {
+    "category": "E-Waste",
+    "bin": "Black",
+    "reward": 12,
+    "carbon_saved": "0.35 kg",
+    "eco_score": 68,
+    "description": "Headphones contain magnets, copper, and mixed plastics.",
+    "can_become": ["Recovered metals", "Recycled plastics"],
+    "tips": ["Check for manufacturer take-back program", "Donate if still working"],
+    "decomposition_time": "200–500 years"
+  },
+  "cfl bulb": {
+    "category": "Hazardous",
+    "bin": "Red",
+    "reward": 15,
+    "carbon_saved": "0.20 kg",
+    "eco_score": 80,
+    "description": "CFL bulbs contain mercury vapor — never break or dispose in regular trash.",
+    "can_become": ["Recovered mercury", "Recycled glass"],
+    "tips": ["Handle carefully — do not break", "Take to hazardous waste facility", "Some retailers accept returns"],
+    "decomposition_time": "1000+ years"
+  },
+  "paint can": {
+    "category": "Hazardous",
+    "bin": "Red",
+    "reward": 25,
+    "carbon_saved": "0.50 kg",
+    "eco_score": 78,
+    "description": "Liquid paint is hazardous and must not enter drains or soil.",
+    "can_become": ["Reused paint", "Recovered solvents"],
+    "tips": ["Let paint dry before disposal if near empty", "Take liquid paint to hazardous waste drop-off", "Donate unused paint"],
+    "decomposition_time": "100+ years (container)"
+  },
+  "medicine": {
+    "category": "Hazardous",
+    "bin": "Red",
+    "reward": 10,
+    "carbon_saved": "0.15 kg",
+    "eco_score": 82,
+    "description": "Expired medicine can contaminate water supply and harm wildlife.",
+    "can_become": ["Safely neutralized waste"],
+    "tips": ["Never flush down toilet", "Take to pharmacy take-back program", "Do not crush into regular trash"],
+    "decomposition_time": "N/A — requires chemical treatment"
+  },
+  "syringe": {
+    "category": "Hazardous",
+    "bin": "Red",
+    "reward": 5,
+    "carbon_saved": "0.05 kg",
+    "eco_score": 88,
+    "description": "Used syringes are biohazardous sharps — require special disposal.",
+    "can_become": ["Safely disposed medical waste"],
+    "tips": ["Cap the needle before disposal", "Use a sharps container", "Take to hospital or pharmacy"],
+    "decomposition_time": "20–200 years"
+  },
+  "chemical bottle": {
+    "category": "Hazardous",
+    "bin": "Red",
+    "reward": 20,
+    "carbon_saved": "0.35 kg",
+    "eco_score": 80,
+    "description": "Household chemicals like bleach and acid need specialized disposal.",
+    "can_become": ["Recovered chemicals", "Treated waste"],
+    "tips": ["Never mix chemicals", "Keep in original labeled container", "Take to hazardous waste facility"],
+    "decomposition_time": "Unknown — depends on chemical"
+  },
+  "thermometer": {
+    "category": "Hazardous",
+    "bin": "Red",
+    "reward": 15,
+    "carbon_saved": "0.10 kg",
+    "eco_score": 85,
+    "description": "Mercury thermometers are highly toxic — handle with extreme care.",
+    "can_become": ["Recovered mercury"],
+    "tips": ["Place in sealed bag if broken", "Take to hazardous waste collection", "Switch to digital thermometers"],
+    "decomposition_time": "N/A — mercury persists indefinitely"
+  },
+  "printer": {
+    "category": "E-Waste",
+    "bin": "Black",
+    "reward": 60,
+    "carbon_saved": "2.00 kg",
+    "eco_score": 72,
+    "description": "Printers contain toner cartridges, circuit boards, and mixed plastics.",
+    "can_become": ["Recycled metal", "Recovered circuit boards", "Recycled plastic"],
+    "tips": ["Remove ink cartridges and recycle separately", "Check manufacturer take-back programs"],
+    "decomposition_time": "500+ years"
+  },
+  "monitor": {
+    "category": "E-Waste",
+    "bin": "Black",
+    "reward": 80,
+    "carbon_saved": "2.80 kg",
+    "eco_score": 75,
+    "description": "Old CRT monitors contain lead glass; LCDs contain mercury backlights.",
+    "can_become": ["Recovered metals", "Recycled glass", "Reused parts"],
+    "tips": ["Never break the screen", "Take to authorized e-waste center only"],
+    "decomposition_time": "1000+ years"
+  },
+  "wooden pallet": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 8,
+    "carbon_saved": "0.30 kg",
+    "eco_score": 70,
+    "description": "Wood pallets can be repaired, resold, or chipped into mulch.",
+    "can_become": ["Repaired pallets", "Mulch", "Wood chips", "Furniture"],
+    "tips": ["List on local reuse platforms", "Donate to community gardens for raised beds"],
+    "decomposition_time": "1–3 years"
+  },
+  "styrofoam": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 3,
+    "carbon_saved": "0.06 kg",
+    "eco_score": 40,
+    "description": "Polystyrene foam is difficult to recycle — only specialized facilities accept it.",
+    "can_become": ["Plastic resins", "Insulation material"],
+    "tips": ["Do NOT put in curbside recycling", "Find a specialized EPS drop-off point", "Reduce use where possible"],
+    "decomposition_time": "500+ years"
+  },
+  "tire": {
+    "category": "Recyclable",
+    "bin": "Blue",
+    "reward": 25,
+    "carbon_saved": "0.80 kg",
+    "eco_score": 65,
+    "description": "Tires can be retreaded or ground into rubber crumb for sports surfaces.",
+    "can_become": ["Rubber mulch", "Playground surfaces", "Athletic tracks", "Retreaded tires"],
+    "tips": ["Take to tire retailer for disposal", "Never burn tires"],
+    "decomposition_time": "50–80 years"
   }
 }
