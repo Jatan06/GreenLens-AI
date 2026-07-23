@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: greenlens_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: greenlens_user
+      POSTGRES_PASSWORD: greenlens_password
+      POSTGRES_DB: greenlens_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenlens_user -d greenlens_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: greenlens_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=False
+      - SECRET_KEY=greenlens_prod_secret_key_change_me_2026
+      - DATABASE_URL=postgresql://greenlens_user:greenlens_password@db:5432/greenlens_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./ai/uploads:/app/ai/uploads
+      - ./ai/outputs:/app/ai/outputs
+
+volumes:
+  postgres_data:
