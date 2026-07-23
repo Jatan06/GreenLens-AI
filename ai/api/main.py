@@ -13,6 +13,7 @@ sys.path.append(str(BASE_DIR))
 
 from inference.predict import predict
 from location.service import find_nearest_centers
+from api.municipality import router as municipality_router
 
 KNOWLEDGE_BASE_PATH = BASE_DIR / "knowledge_base" / "waste_info.json"
 
@@ -21,6 +22,8 @@ app = FastAPI(
     description="AI-Powered Waste Segregation & Circular Economy Assistant",
     version="2.0",
 )
+
+app.include_router(municipality_router)
 
 # ── CORS — allow frontend on any port during development ──────────────────────
 app.add_middleware(
