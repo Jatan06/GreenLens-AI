@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+*.pth
+*.pt
+*.onnx
+runs/
+datasets/
+.idea/
+.vscode/
