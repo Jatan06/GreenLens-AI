@@ -6,8 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
 
-# Ensure app package is in path
+# Ensure app and ai packages are in path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "ai")))
 
 from app.config import settings
 from app.database import init_db

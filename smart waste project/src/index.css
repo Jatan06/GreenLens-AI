@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --bg-main: #f4f7fb;
@@ -27,6 +27,25 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+[data-theme="dark"] {
+  --bg-main: #0f172a;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --bg-card-alt: #1e293b;
+  --bg-input: #0f172a;
+  --bg-elevated: #334155;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-glow: rgba(16, 185, 129, 0.3);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --accent: #10b981;
+  --accent-strong: #059669;
+  --accent-soft: rgba(16, 185, 129, 0.15);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -37,7 +56,7 @@ html {
 
 body {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f8fafc 0%, #f4f7fb 100%);
+  background: var(--bg-main);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -45,6 +64,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 #root {

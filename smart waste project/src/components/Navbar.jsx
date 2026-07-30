@@ -4,6 +4,7 @@ import {
   Scan, 
   Trash2, 
   Route, 
+  MapPin,
   BarChart3, 
   Award, 
   Bot, 
@@ -31,6 +32,7 @@ export default function Navbar({
     { id: "scanner", label: "Item Scanner", icon: Scan },
     { id: "iot-bins", label: "Bins", icon: Trash2 },
     { id: "routes", label: "Routes", icon: Route },
+    { id: "map", label: "Map", icon: MapPin },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "rewards", label: "Rewards", icon: Award },
     { id: "assistant", label: "Assistant", icon: Bot },
@@ -71,9 +73,6 @@ export default function Navbar({
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontWeight: 800, fontSize: "1.2rem", letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
               GreenLens AI
-            </span>
-            <span className="badge badge-success" style={{ padding: "2px 8px", fontSize: "0.65rem" }}>
-              <Activity size={10} /> Live IoT API
             </span>
           </div>
           <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", margin: 0 }}>
@@ -151,17 +150,21 @@ export default function Navbar({
         {/* User Auth Button */}
         {currentUser ? (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{
+            <div 
+              onClick={() => setActiveTab("profile")}
+              style={{
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              background: "var(--bg-main)",
-              border: "1px solid var(--border-color)",
+              background: activeTab === "profile" ? "rgba(16, 185, 129, 0.15)" : "var(--bg-main)",
+              border: activeTab === "profile" ? "1px solid #10b981" : "1px solid var(--border-color)",
               padding: "6px 12px",
               borderRadius: "10px",
               fontSize: "0.85rem",
               fontWeight: 600,
-              color: "var(--text-primary)"
+              color: activeTab === "profile" ? "#10b981" : "var(--text-primary)",
+              cursor: "pointer",
+              transition: "all 0.2s"
             }}>
               <UserCheck size={14} color="#10b981" />
               <span>{currentUser.username || currentUser.email}</span>

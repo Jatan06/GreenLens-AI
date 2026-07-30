@@ -9,6 +9,8 @@ import EcoRewards from "../components/EcoRewards";
 import WasteBot from "../components/WasteBot";
 import Footer from "../components/Footer";
 import AuthModal from "../components/AuthModal";
+import MapPage from "../components/MapPage";
+import UserProfile from "../components/UserProfile";
 import { INITIAL_IOT_BINS } from "../data/wasteData";
 import { getCurrentUser, removeToken, getUserImpactStats } from "../api/client";
 
@@ -124,6 +126,13 @@ export default function Home() {
 
         {activeTab === "assistant" && (
           <WasteBot />
+        )}
+        {activeTab === "map" && (
+          <MapPage />
+        )}
+
+        {activeTab === "profile" && (
+          <UserProfile currentUser={currentUser} onLogout={handleLogout} />
         )}
       </main>
 

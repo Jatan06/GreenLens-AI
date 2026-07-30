@@ -5,7 +5,8 @@ export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const API_BASE_URL = API_BASE;
 
 // Token storage helpers - synchronized for both keys used in the codebase
-export const getToken = () => localStorage.getItem("greenlens_token") || localStorage.getItem("glToken");
+export const getToken = () =>
+  localStorage.getItem("greenlens_token") || localStorage.getItem("glToken");
 export const setToken = (token) => {
   localStorage.setItem("greenlens_token", token);
   localStorage.setItem("glToken", token);
@@ -49,7 +50,9 @@ async function request(endpoint, options = {}) {
         if (typeof errorData.detail === "string") {
           errorMessage = errorData.detail;
         } else if (Array.isArray(errorData.detail)) {
-          errorMessage = errorData.detail.map((e) => e.msg || e.detail).join(", ");
+          errorMessage = errorData.detail
+            .map((e) => e.msg || e.detail)
+            .join(", ");
         }
       }
     } catch {
@@ -64,21 +67,26 @@ async function request(endpoint, options = {}) {
 // 🔑 AUTHENTICATION APIs
 
 // Polymorphic: handles object parameter (userData) or individual arguments
-export async function registerUser(emailOrUserData, username, password, fullName = "") {
+export async function registerUser(
+  emailOrUserData,
+  username,
+  password,
+  fullName = "",
+) {
   let bodyData;
   if (typeof emailOrUserData === "object" && emailOrUserData !== null) {
     bodyData = {
       email: emailOrUserData.email,
       username: emailOrUserData.username,
       password: emailOrUserData.password,
-      full_name: emailOrUserData.full_name || emailOrUserData.fullName || ""
+      full_name: emailOrUserData.full_name || emailOrUserData.fullName || "",
     };
   } else {
     bodyData = {
       email: emailOrUserData,
       username,
       password,
-      full_name: fullName
+      full_name: fullName,
     };
   }
   const data = await request("/api/v1/auth/register", {
@@ -97,12 +105,12 @@ export async function loginUser(emailOrCredentials, password) {
   if (typeof emailOrCredentials === "object" && emailOrCredentials !== null) {
     bodyData = {
       email: emailOrCredentials.email,
-      password: emailOrCredentials.password
+      password: emailOrCredentials.password,
     };
   } else {
     bodyData = {
       email: emailOrCredentials,
-      password
+      password,
     };
   }
   const data = await request("/api/v1/auth/login", {
@@ -150,7 +158,11 @@ export async function getGlobalLeaderboard(limit = 10) {
 }
 
 // 📷 AI WASTE SCAN & HISTORY APIs
-export async function analyzeWasteScan(file, latitude = 37.7749, longitude = -122.4194) {
+export async function analyzeWasteScan(
+  file,
+  latitude = 37.7749,
+  longitude = -122.4194,
+) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("latitude", latitude.toString());
@@ -212,7 +224,12 @@ export async function getUserRedeemedRewards() {
 }
 
 // 📍 RECYCLING CENTERS APIs
-export async function getNearbyRecyclingCenters(latitude, longitude, category = null, limit = 10) {
+export async function getNearbyRecyclingCenters(
+  latitude,
+  longitude,
+  category = null,
+  limit = 10,
+) {
   let url = `/api/v1/recycling-centers/nearby?latitude=${latitude}&longitude=${longitude}&limit=${limit}`;
   if (category) {
     url += `&category=${encodeURIComponent(category)}`;
@@ -292,8 +309,18 @@ export async function getWasteInfo(item) {
   try {
     return await request(`/waste-info/${encodeURIComponent(item)}`);
   } catch (err) {
-    const res = await fetch(`${API_BASE_URL}/waste-info/${encodeURIComponent(item)}`);
+    const res = await fetch(
+      `${API_BASE_URL}/waste-info/${encodeURIComponent(item)}`,
+    );
     if (!res.ok) throw new Error("Item not found");
     return res.json();
   }
 }
+
+export async function askWasteAssistant(question) {
+  return request("/api/v1/assistant/ask", {
+    method: "POST",
+    body: JSON.stringify({ question }),
+  });
+}
+
