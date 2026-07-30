@@ -13,6 +13,7 @@ from utils.recommend import RecommendationEngine
 engine = RecommendationEngine()
 
 model = None
+model_error = None
 
 # Comprehensive mapping of standard COCO classes to GreenLens waste taxonomy
 COCO_WASTE_MAP = {
@@ -20,13 +21,14 @@ COCO_WASTE_MAP = {
     "bottle": "plastic bottle",
     "cup": "plastic bottle",
     "wine glass": "glass bottle",
+    "bowl": "plastic bottle",
     
     # E-Waste
     "cell phone": "mobile phone",
     "laptop": "laptop",
     "keyboard": "keyboard",
-    "mouse": "e_waste",
-    "remote": "e_waste",
+    "mouse": "keyboard",   # Fallback to keyboard since it's E-waste
+    "remote": "charger",    # Fallback to charger since it's E-waste
     "tv": "monitor",
     
     # Organic / Food Waste
@@ -45,32 +47,38 @@ COCO_WASTE_MAP = {
     
     # Cans / Metal / Containers
     "can": "can",
-    "bowl": "plastic bottle"
+    "backpack": "paper",
+    "scissors": "can",
 }
 
-# Attempt YOLO model load quietly without raising OS DLL errors
-try:
-    os.environ["YOLO_VERBOSE"] = "False"
-    # pyrefly: ignore [missing-import]
-    from ultralytics import YOLO
-    
-    # Priority 1: Check for custom fine-tuned waste weights
-    CUSTOM_MODEL_PATH = BASE_DIR / "models" / "best.pt"
-    # Priority 2: Standard YOLO pre-trained model
-    PRETRAINED_MODEL_PATH = BASE_DIR / "yolov8n.pt"
-    INFERENCE_MODEL_PATH = BASE_DIR / "inference" / "yolov8n.pt"
-    
-    if CUSTOM_MODEL_PATH.exists():
-        model = YOLO(str(CUSTOM_MODEL_PATH))
-    elif PRETRAINED_MODEL_PATH.exists():
-        model = YOLO(str(PRETRAINED_MODEL_PATH))
-    elif INFERENCE_MODEL_PATH.exists():
-        model = YOLO(str(INFERENCE_MODEL_PATH))
-    else:
-        # Auto-download base yolov8n if no local weights exist
-        model = YOLO("yolov8n.pt")
-except Exception:
-    model = None
+
+def get_model():
+    """Load the supplied waste model, or a real pretrained YOLOv8 model once."""
+    global model, model_error
+    if model is not None:
+        return model
+    if model_error is not None:
+        raise RuntimeError(model_error)
+    try:
+        os.environ["YOLO_VERBOSE"] = "False"
+        from ultralytics import YOLO
+        
+        CUSTOM_MODEL_PATH = BASE_DIR / "models" / "best.pt"
+        PRETRAINED_MODEL_PATH = BASE_DIR / "yolov8n.pt"
+        INFERENCE_MODEL_PATH = BASE_DIR / "inference" / "yolov8n.pt"
+        
+        if CUSTOM_MODEL_PATH.exists():
+            model = YOLO(str(CUSTOM_MODEL_PATH))
+        elif PRETRAINED_MODEL_PATH.exists():
+            model = YOLO(str(PRETRAINED_MODEL_PATH))
+        elif INFERENCE_MODEL_PATH.exists():
+            model = YOLO(str(INFERENCE_MODEL_PATH))
+        else:
+            model = YOLO("yolov8n.pt")
+        return model
+    except Exception as exc:
+        model_error = f"Unable to load YOLO model: {exc}"
+        raise RuntimeError(model_error) from exc
 
 
 def get_bin_color_bgr(bin_name: str):
@@ -87,10 +95,9 @@ def get_bin_color_bgr(bin_name: str):
 
 
 def predict(image_path):
-    global model
     output_dir = BASE_DIR / "outputs"
     output_dir.mkdir(exist_ok=True)
-    output_path = output_dir / "prediction.jpg"
+    output_path = output_dir / f"{Path(image_path).stem}_prediction.jpg"
 
     detections = []
     overall = {
@@ -102,12 +109,15 @@ def predict(image_path):
     summary = {}
 
     img = cv2.imread(str(image_path))
-    h, w = (400, 600) if img is None else img.shape[:2]
+    if img is None:
+        raise ValueError("The uploaded image could not be read.")
+    h, w = img.shape[:2]
 
-    if model is not None:
-        try:
-            results = model(str(image_path), conf=0.25)
-            annotated = img.copy() if img is not None else np.zeros((h, w, 3), dtype=np.uint8)
+    try:
+        active_model = get_model()
+        if active_model is not None:
+            results = active_model(str(image_path), conf=0.25, verbose=False)
+            annotated = img.copy()
 
             for result in results:
                 for box in result.boxes:
@@ -115,6 +125,9 @@ def predict(image_path):
                     x1, y1, x2, y2 = box.xyxy[0].tolist()
                     confidence = round(float(box.conf), 2)
                     
+                    if confidence < 0.25:
+                        continue
+                        
                     # Map COCO raw name to waste class if available
                     waste_class = COCO_WASTE_MAP.get(raw_class_name, raw_class_name)
                     info = engine.get_info(waste_class)
@@ -155,12 +168,14 @@ def predict(image_path):
                     })
 
             cv2.imwrite(str(output_path), annotated)
-        except Exception as e:
-            print(f"Prediction error: {e}")
-
-    # Write fallback original/clean image to output_path if no detection visual was generated
-    if not output_path.exists() and img is not None:
-        cv2.imwrite(str(output_path), img)
+        else:
+            # If no model, write original image as fallback
+            cv2.imwrite(str(output_path), img)
+    except Exception as e:
+        print(f"Prediction error: {e}")
+        # Fallback
+        if not output_path.exists():
+            cv2.imwrite(str(output_path), img)
 
     for det in detections:
         class_name = det["name"]
@@ -193,5 +208,5 @@ def predict(image_path):
         "overall": overall,
         "summary": summary,
         "detections": detections,
-        "annotated_image": "/outputs/prediction.jpg"
-    }
+        "annotated_image": f"/outputs/{output_path.name}"
+    }

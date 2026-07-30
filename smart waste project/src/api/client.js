@@ -1,19 +1,12 @@
 // GreenLens AI Core Backend API Client
 // Connects Smart Waste Frontend with FastAPI Backend (http://localhost:8000)
 
-export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
-const API_BASE_URL = API_BASE;
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-// Token storage helpers - synchronized for both keys used in the codebase
-export const getToken = () => localStorage.getItem("greenlens_token") || localStorage.getItem("glToken");
-export const setToken = (token) => {
-  localStorage.setItem("greenlens_token", token);
-  localStorage.setItem("glToken", token);
-};
-export const removeToken = () => {
-  localStorage.removeItem("greenlens_token");
-  localStorage.removeItem("glToken");
-};
+// Token storage helpers
+export const getToken = () => localStorage.getItem("greenlens_token");
+export const setToken = (token) => localStorage.setItem("greenlens_token", token);
+export const removeToken = () => localStorage.removeItem("greenlens_token");
 
 // Auth Headers Helper
 const getHeaders = (isMultipart = false) => {
@@ -62,28 +55,10 @@ async function request(endpoint, options = {}) {
 }
 
 // 🔑 AUTHENTICATION APIs
-
-// Polymorphic: handles object parameter (userData) or individual arguments
-export async function registerUser(emailOrUserData, username, password, fullName = "") {
-  let bodyData;
-  if (typeof emailOrUserData === "object" && emailOrUserData !== null) {
-    bodyData = {
-      email: emailOrUserData.email,
-      username: emailOrUserData.username,
-      password: emailOrUserData.password,
-      full_name: emailOrUserData.full_name || emailOrUserData.fullName || ""
-    };
-  } else {
-    bodyData = {
-      email: emailOrUserData,
-      username,
-      password,
-      full_name: fullName
-    };
-  }
+export async function registerUser(email, username, password, fullName = "") {
   const data = await request("/api/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify(bodyData),
+    body: JSON.stringify({ email, username, password, full_name: fullName }),
   });
   if (data.access_token) {
     setToken(data.access_token);
@@ -91,23 +66,10 @@ export async function registerUser(emailOrUserData, username, password, fullName
   return data;
 }
 
-// Polymorphic: handles object parameter (credentials) or individual arguments
-export async function loginUser(emailOrCredentials, password) {
-  let bodyData;
-  if (typeof emailOrCredentials === "object" && emailOrCredentials !== null) {
-    bodyData = {
-      email: emailOrCredentials.email,
-      password: emailOrCredentials.password
-    };
-  } else {
-    bodyData = {
-      email: emailOrCredentials,
-      password
-    };
-  }
+export async function loginUser(email, password) {
   const data = await request("/api/v1/auth/login", {
     method: "POST",
-    body: JSON.stringify(bodyData),
+    body: JSON.stringify({ email, password }),
   });
   if (data.access_token) {
     setToken(data.access_token);
@@ -125,8 +87,11 @@ export async function getCurrentUser() {
   }
 }
 
-export async function getCurrentUserProfile() {
-  return request("/api/v1/auth/me");
+export async function askWasteAssistant(question) {
+  return request("/api/v1/assistant/ask", {
+    method: "POST",
+    body: JSON.stringify({ question }),
+  });
 }
 
 // 👤 USER MANAGEMENT & LEADERBOARD APIs
@@ -162,33 +127,8 @@ export async function analyzeWasteScan(file, latitude = 37.7749, longitude = -12
   });
 }
 
-// Falls back to old predict route if analyze fails, to preserve local robustness
-export async function predictWaste(imageFile, latitude, longitude) {
-  const formData = new FormData();
-  formData.append("file", imageFile);
-  formData.append("latitude", latitude);
-  formData.append("longitude", longitude);
-
-  try {
-    return await request("/api/v1/scans/analyze", {
-      method: "POST",
-      body: formData,
-    });
-  } catch (err) {
-    // Fallback to predict
-    return await request("/predict", {
-      method: "POST",
-      body: formData,
-    });
-  }
-}
-
 export async function getScanHistory(skip = 0, limit = 20) {
   return request(`/api/v1/scans/history?skip=${skip}&limit=${limit}`);
-}
-
-export async function getUserScanHistory() {
-  return request("/api/v1/scans/history");
 }
 
 export async function getScanById(scanId) {
@@ -286,14 +226,4 @@ export function getFullMediaUrl(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
   return `${API_BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
-}
-
-export async function getWasteInfo(item) {
-  try {
-    return await request(`/waste-info/${encodeURIComponent(item)}`);
-  } catch (err) {
-    const res = await fetch(`${API_BASE_URL}/waste-info/${encodeURIComponent(item)}`);
-    if (!res.ok) throw new Error("Item not found");
-    return res.json();
-  }
 }

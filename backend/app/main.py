@@ -22,8 +22,10 @@ from app.routers import (
 # Import municipality router from ai package if present
 try:
     from api.municipality import router as municipality_router
+    from api.assistant import router as assistant_router
 except ImportError:
     municipality_router = None
+    assistant_router = None
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -56,6 +58,8 @@ app.include_router(recycling_centers_router.router)
 
 if municipality_router:
     app.include_router(municipality_router)
+if assistant_router:
+    app.include_router(assistant_router)
 
 
 @app.on_event("startup")
