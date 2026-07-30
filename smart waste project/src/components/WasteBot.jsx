@@ -7,9 +7,10 @@ import {
   MessageSquare, 
   User, 
   Lightbulb, 
-  RotateCcw
+  RotateCcw,
+  Mic
 } from "lucide-react";
-import { MOCK_BOT_QA } from "../data/wasteData";
+import { askWasteAssistant } from "../api/client";
 
 export default function WasteBot() {
   const [messages, setMessages] = useState([
@@ -23,6 +24,19 @@ export default function WasteBot() {
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
+  const startVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setMessages((prev) => [...prev, { id: Date.now(), sender: "bot", text: "Voice input is not supported by this browser. Please type your question.", time: "Just now" }]);
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = navigator.language || "en-IN";
+    recognition.interimResults = false;
+    recognition.onresult = (event) => setInputText(event.results[0][0].transcript);
+    recognition.start();
+  };
+
   const samplePrompts = [
     "How to dispose of Lithium batteries?",
     "Can greasy pizza boxes be recycled?",
@@ -30,7 +44,7 @@ export default function WasteBot() {
     "How do I recycle green wine glass bottles?"
   ];
 
-  const handleSend = (textToSend = inputText) => {
+  const handleSend = async (textToSend = inputText) => {
     const query = textToSend.trim();
     if (!query) return;
 
@@ -46,29 +60,24 @@ export default function WasteBot() {
     setInputText("");
     setIsTyping(true);
 
-    // Generate intelligent Bot response
-    setTimeout(() => {
-      let botAnswer = "Great question! Generally, dry un-contaminated recyclable plastics and metals belong in the Blue Bin, paper in Yellow, organic food waste in Green compost, and electronics at designated Red E-Waste stations.";
-
-      const lower = query.toLowerCase();
-      const match = MOCK_BOT_QA.find((item) =>
-        item.keywords.some((kw) => lower.includes(kw))
-      );
-
-      if (match) {
-        botAnswer = match.answer;
-      }
-
+    try {
+      const response = await askWasteAssistant(query);
       const botMsg = {
         id: Date.now() + 1,
         sender: "bot",
-        text: botAnswer,
+        text: response.answer,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-
       setMessages((prev) => [...prev, botMsg]);
+    } catch (error) {
+      setMessages((prev) => [...prev, {
+        id: Date.now() + 1, sender: "bot",
+        text: "I could not reach the waste guidance service. Please try again in a moment.",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+    } finally {
       setIsTyping(false);
-    }, 900);
+    }
   };
 
   return (
@@ -237,6 +246,15 @@ export default function WasteBot() {
               outline: "none"
             }}
           />
+          <button
+            type="button"
+            onClick={startVoiceInput}
+            aria-label="Use voice input"
+            className="btn-secondary"
+            style={{ padding: "12px" }}
+          >
+            <Mic size={18} />
+          </button>
           <button
             type="submit"
             className="btn-primary"

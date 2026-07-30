@@ -19,8 +19,10 @@ class RecommendationEngine:
                 "category": "Unknown",
                 "bin": "Unknown",
                 "reward": 0,
+                "eco_score": 0,
                 "carbon_saved": "0 kg",
                 "description": "No information available.",
-                "can_become": "Unknown"
+                "can_become": ["Unknown"],
+                "tips": ["This object is not in the waste knowledge base. Check local disposal guidance."],
             }
         )

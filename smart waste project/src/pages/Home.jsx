@@ -8,13 +8,35 @@ import EsgAnalytics from "../components/EsgAnalytics";
 import EcoRewards from "../components/EcoRewards";
 import WasteBot from "../components/WasteBot";
 import Footer from "../components/Footer";
+import AuthModal from "../components/AuthModal";
 import { INITIAL_IOT_BINS } from "../data/wasteData";
+import { getCurrentUser, removeToken, getUserImpactStats } from "../api/client";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [userPoints, setUserPoints] = useState(350);
   const [theme, setTheme] = useState("dark");
   const [bins, setBins] = useState(INITIAL_IOT_BINS);
+  
+  // User Auth & Profile State
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Load user profile on app startup if token exists
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+          setUserPoints(user.total_reward_points || 350);
+        }
+      } catch (err) {
+        console.warn("Could not fetch logged-in user profile:", err);
+      }
+    }
+    loadUser();
+  }, []);
 
   // Apply dark / light theme to body document attribute
   useEffect(() => {
@@ -27,6 +49,21 @@ export default function Home() {
 
   const handleAddPoints = (pts) => {
     setUserPoints(prev => prev + pts);
+    if (currentUser) {
+      setCurrentUser(prev => prev ? { ...prev, total_reward_points: (prev.total_reward_points || 0) + pts } : prev);
+    }
+  };
+
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    if (user && user.total_reward_points !== undefined) {
+      setUserPoints(user.total_reward_points);
+    }
+  };
+
+  const handleLogout = () => {
+    removeToken();
+    setCurrentUser(null);
   };
 
   const urgentBinsCount = bins.filter(b => b.fillLevel >= 85).length;
@@ -37,6 +74,9 @@ export default function Home() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         userPoints={userPoints}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
         theme={theme}
         toggleTheme={toggleTheme}
       />
@@ -49,12 +89,12 @@ export default function Home() {
               iotBinsCount={bins.length}
               urgentBinsCount={urgentBinsCount}
             />
-            <AiScanner onAddPoints={handleAddPoints} />
+            <AiScanner onAddPoints={handleAddPoints} currentUser={currentUser} />
           </>
         )}
 
         {activeTab === "scanner" && (
-          <AiScanner onAddPoints={handleAddPoints} />
+          <AiScanner onAddPoints={handleAddPoints} currentUser={currentUser} />
         )}
 
         {activeTab === "iot-bins" && (
@@ -74,7 +114,12 @@ export default function Home() {
         )}
 
         {activeTab === "rewards" && (
-          <EcoRewards userPoints={userPoints} setUserPoints={setUserPoints} />
+          <EcoRewards 
+            userPoints={userPoints} 
+            setUserPoints={setUserPoints}
+            currentUser={currentUser}
+            onOpenAuthModal={() => setIsAuthModalOpen(true)}
+          />
         )}
 
         {activeTab === "assistant" && (
@@ -83,6 +128,12 @@ export default function Home() {
       </main>
 
       <Footer />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }

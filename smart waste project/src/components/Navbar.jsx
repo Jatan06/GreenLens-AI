@@ -10,10 +10,22 @@ import {
   Sun, 
   Moon, 
   Activity,
-  Layers
+  Layers,
+  UserCheck,
+  LogIn,
+  LogOut
 } from "lucide-react";
 
-export default function Navbar({ activeTab, setActiveTab, userPoints, theme, toggleTheme }) {
+export default function Navbar({ 
+  activeTab, 
+  setActiveTab, 
+  userPoints, 
+  currentUser,
+  onOpenAuthModal,
+  onLogout,
+  theme, 
+  toggleTheme 
+}) {
   const navItems = [
     { id: "dashboard", label: "Overview", icon: Layers },
     { id: "scanner", label: "Item Scanner", icon: Scan },
@@ -58,10 +70,10 @@ export default function Navbar({ activeTab, setActiveTab, userPoints, theme, tog
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontWeight: 800, fontSize: "1.2rem", letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
-              Smart Waste
+              GreenLens AI
             </span>
             <span className="badge badge-success" style={{ padding: "2px 8px", fontSize: "0.65rem" }}>
-              <Activity size={10} /> Live IoT
+              <Activity size={10} /> Live IoT API
             </span>
           </div>
           <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", margin: 0 }}>
@@ -113,7 +125,7 @@ export default function Navbar({ activeTab, setActiveTab, userPoints, theme, tog
         })}
       </div>
 
-      {/* Controls & User Points */}
+      {/* Controls, Points & Auth */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         {/* Points Display */}
         <div 
@@ -135,6 +147,65 @@ export default function Navbar({ activeTab, setActiveTab, userPoints, theme, tog
           <Award size={16} />
           <span>{userPoints} Eco-Pts</span>
         </div>
+
+        {/* User Auth Button */}
+        {currentUser ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "var(--bg-main)",
+              border: "1px solid var(--border-color)",
+              padding: "6px 12px",
+              borderRadius: "10px",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              color: "var(--text-primary)"
+            }}>
+              <UserCheck size={14} color="#10b981" />
+              <span>{currentUser.username || currentUser.email}</span>
+            </div>
+            <button
+              onClick={onLogout}
+              title="Logout"
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "10px",
+                border: "1px solid var(--border-color)",
+                background: "var(--bg-card)",
+                color: "#ef4444",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer"
+              }}
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onOpenAuthModal}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "var(--accent)",
+              border: "none",
+              color: "#ffffff",
+              padding: "8px 14px",
+              borderRadius: "10px",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              cursor: "pointer"
+            }}
+          >
+            <LogIn size={15} />
+            Sign In
+          </button>
+        )}
 
         {/* Theme Toggle */}
         <button

@@ -52,7 +52,13 @@ async def analyze_waste_scan(
         )
 
     # Execute AI Prediction pipeline
-    ai_result = process_image_scan(saved_file_path)
+    try:
+        ai_result = process_image_scan(saved_file_path)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"ML inference is unavailable: {exc}",
+        ) from exc
 
     overall = ai_result.get("overall", {})
     summary = ai_result.get("summary", {})

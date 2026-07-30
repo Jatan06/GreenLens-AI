@@ -13,17 +13,43 @@ from utils.recommend import RecommendationEngine
 engine = RecommendationEngine()
 
 model = None
-# Attempt YOLO model load quietly without raising OS DLL errors
-try:
-    # Disable PyTorch / Ultralytics verbose warning outputs
-    os.environ["YOLO_VERBOSE"] = "False"
-    # pyrefly: ignore [missing-import]
-    from ultralytics import YOLO
-    MODEL_PATH = BASE_DIR / "models" / "best.pt"
-    if MODEL_PATH.exists():
-        model = YOLO(str(MODEL_PATH))
-except Exception:
-    model = None
+model_error = None
+MODEL_PATH = BASE_DIR / "models" / "best.pt"
+PRETRAINED_MODEL_PATH = BASE_DIR / "yolov8n.pt"
+
+# COCO labels emitted by the standard YOLOv8 model that can be mapped to the
+# project's waste knowledge base. A custom ai/models/best.pt takes precedence.
+COCO_WASTE_MAP = {
+    "bottle": "plastic bottle", "wine glass": "glass bottle", "cup": "plastic cup",
+    "banana": "banana peel", "apple": "food waste", "orange": "food waste",
+    "cell phone": "mobile phone", "laptop": "laptop", "keyboard": "keyboard",
+    "mouse": "computer mouse", "remote": "electronic device", "tv": "monitor",
+    "book": "paper", "backpack": "textile", "scissors": "metal",
+}
+
+
+def get_model():
+    """Load the supplied waste model, or a real pretrained YOLOv8 model once."""
+    global model, model_error
+    if model is not None:
+        return model
+    if model_error is not None:
+        raise RuntimeError(model_error)
+    try:
+        os.environ["YOLO_VERBOSE"] = "False"
+        from ultralytics import YOLO
+        # Ultralytics downloads this official pretrained model on first use if
+        # it is not cached. Put a custom best.pt in ai/models for waste labels.
+        if MODEL_PATH.exists():
+            model = YOLO(str(MODEL_PATH))
+        elif PRETRAINED_MODEL_PATH.exists():
+            model = YOLO(str(PRETRAINED_MODEL_PATH))
+        else:
+            model = YOLO("yolov8n.pt")
+        return model
+    except Exception as exc:
+        model_error = f"Unable to load YOLO model: {exc}"
+        raise RuntimeError(model_error) from exc
 
 
 def get_bin_color_bgr(bin_name: str):
@@ -43,7 +69,7 @@ def predict(image_path):
     global model
     output_dir = BASE_DIR / "outputs"
     output_dir.mkdir(exist_ok=True)
-    output_path = output_dir / "prediction.jpg"
+    output_path = output_dir / f"{Path(image_path).stem}_prediction.jpg"
 
     detections = []
     overall = {
@@ -57,86 +83,33 @@ def predict(image_path):
     img = cv2.imread(str(image_path))
     h, w = (400, 600) if img is None else img.shape[:2]
 
-    if model is not None:
-        try:
-            results = model(str(image_path))
-            annotated_image = results[0].plot()
-            cv2.imwrite(str(output_path), annotated_image)
-            for result in results:
-                for box in result.boxes:
-                    class_name = result.names[int(box.cls)]
-                    x1, y1, x2, y2 = box.xyxy[0].tolist()
-                    confidence = round(float(box.conf), 2)
-                    if confidence < 0.5:
-                        continue
-                    info = engine.get_info(class_name)
-                    detections.append({
-                        "name": class_name,
-                        "confidence": confidence,
-                        "bounding_box": {
-                            "x1": round(x1, 2),
-                            "y1": round(y1, 2),
-                            "x2": round(x2, 2),
-                            "y2": round(y2, 2)
-                        },
-                        "category": info["category"],
-                        "subcategory": info.get("subcategory", ""),
-                        "material": info.get("material", ""),
-                        "bin": info["bin"],
-                        "reward": info["reward"],
-                        "eco_score": info.get("eco_score", 50),
-                        "carbon_saved": info["carbon_saved"],
-                        "description": info["description"],
-                        "can_become": info.get("can_become", []),
-                        "tips": info.get("tips", []),
-                        "decomposition_time": info.get("decomposition_time", "")
-                    })
-        except Exception:
-            model = None
+    if img is None:
+        raise ValueError("The uploaded image could not be read.")
 
-    if not detections:
-        # High-performance CV waste analyzer fallback with bounding boxes
-        sample_items = ["plastic bottle"]
-        
-        # Calculate dynamic bounding box coordinates based on input image dimensions
-        box_w = int(w * 0.5)
-        box_h = int(h * 0.6)
-        x1 = int((w - box_w) / 2)
-        y1 = int((h - box_h) / 2)
-        x2 = x1 + box_w
-        y2 = y1 + box_h
-
-        annotated = img.copy() if img is not None else np.zeros((h, w, 3), dtype=np.uint8)
-
-        for class_name in sample_items:
+    active_model = get_model()
+    results = active_model(str(image_path), verbose=False)
+    annotated_image = results[0].plot()
+    cv2.imwrite(str(output_path), annotated_image)
+    for result in results:
+        for box in result.boxes:
+            raw_name = result.names[int(box.cls)]
+            class_name = COCO_WASTE_MAP.get(raw_name.lower(), raw_name.lower())
+            x1, y1, x2, y2 = box.xyxy[0].tolist()
+            confidence = round(float(box.conf), 2)
+            if confidence < 0.5:
+                continue
             info = engine.get_info(class_name)
-            color = get_bin_color_bgr(info.get("bin", "Blue"))
-            
-            # Draw colored bounding box and label overlay on annotated image
-            cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 3)
-            label = f"{class_name.title()} (95%)"
-            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
-            cv2.rectangle(annotated, (x1, y1 - th - 10), (x1 + tw + 10, y1), color, -1)
-            cv2.putText(annotated, label, (x1 + 5, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
             detections.append({
                 "name": class_name,
-                "confidence": 0.95,
-                "bounding_box": {"x1": float(x1), "y1": float(y1), "x2": float(x2), "y2": float(y2)},
-                "category": info["category"],
-                "subcategory": info.get("subcategory", ""),
-                "material": info.get("material", ""),
-                "bin": info["bin"],
-                "reward": info["reward"],
-                "eco_score": info.get("eco_score", 50),
-                "carbon_saved": info["carbon_saved"],
-                "description": info["description"],
-                "can_become": info.get("can_become", []),
-                "tips": info.get("tips", []),
+                "confidence": confidence,
+                "bounding_box": {"x1": round(x1, 2), "y1": round(y1, 2), "x2": round(x2, 2), "y2": round(y2, 2)},
+                "category": info["category"], "subcategory": info.get("subcategory", ""),
+                "material": info.get("material", ""), "bin": info["bin"],
+                "reward": info["reward"], "eco_score": info.get("eco_score", 50),
+                "carbon_saved": info["carbon_saved"], "description": info["description"],
+                "can_become": info.get("can_become", []), "tips": info.get("tips", []),
                 "decomposition_time": info.get("decomposition_time", "")
             })
-        
-        cv2.imwrite(str(output_path), annotated)
 
     for det in detections:
         class_name = det["name"]
@@ -169,5 +142,5 @@ def predict(image_path):
         "overall": overall,
         "summary": summary,
         "detections": detections,
-        "annotated_image": "/outputs/prediction.jpg"
+        "annotated_image": f"/outputs/{output_path.name}"
     }
