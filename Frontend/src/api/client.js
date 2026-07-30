@@ -55,10 +55,10 @@ async function request(endpoint, options = {}) {
 }
 
 // 🔑 AUTHENTICATION APIs
-export async function registerUser(email, username, password, fullName = "") {
+export async function registerUser(email, username, password, fullName = "", role = "citizen") {
   const data = await request("/api/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, username, password, full_name: fullName }),
+    body: JSON.stringify({ email, username, password, full_name: fullName, role }),
   });
   if (data.access_token) {
     setToken(data.access_token);

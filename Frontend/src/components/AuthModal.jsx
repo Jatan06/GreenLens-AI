@@ -4,6 +4,7 @@ import { loginUser, registerUser } from "../api/client";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [mode, setMode] = useState("login"); // 'login' | 'register'
+  const [role, setRole] = useState("citizen"); // 'citizen' | 'admin'
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
@@ -29,8 +30,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           onClose();
         }, 600);
       } else {
-        const res = await registerUser(email, username, password, fullName);
-        setSuccess("Registration successful! Welcome bonus +50 Eco-Points added.");
+        const res = await registerUser(email, username, password, fullName, role);
+        setSuccess(`Registration successful! Registered as ${role.toUpperCase()}.`);
         setTimeout(() => {
           onAuthSuccess(res.user);
           onClose();
@@ -222,6 +223,50 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
           {mode === "register" && (
             <>
+              <div>
+                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "6px", display: "block" }}>
+                  Account Type
+                </label>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setRole("citizen")}
+                    style={{
+                      flex: 1,
+                      padding: "8px 10px",
+                      borderRadius: "8px",
+                      border: role === "citizen" ? "1px solid #10b981" : "1px solid var(--border-color)",
+                      background: role === "citizen" ? "rgba(16, 185, 129, 0.12)" : "var(--bg-main)",
+                      color: role === "citizen" ? "#10b981" : "var(--text-secondary)",
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease"
+                    }}
+                  >
+                    🌿 Citizen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole("admin")}
+                    style={{
+                      flex: 1,
+                      padding: "8px 10px",
+                      borderRadius: "8px",
+                      border: role === "admin" ? "1px solid #6366f1" : "1px solid var(--border-color)",
+                      background: role === "admin" ? "rgba(99, 102, 241, 0.12)" : "var(--bg-main)",
+                      color: role === "admin" ? "#818cf8" : "var(--text-secondary)",
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease"
+                    }}
+                  >
+                    🏢 Municipal Admin
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px", display: "block" }}>
                   Username

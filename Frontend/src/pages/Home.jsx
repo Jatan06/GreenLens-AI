@@ -15,6 +15,7 @@ import { INITIAL_IOT_BINS } from "../data/wasteData";
 import { getCurrentUser, removeToken, getUserImpactStats } from "../api/client";
 
 export default function Home() {
+  const [portalMode, setPortalMode] = useState("citizen"); // "citizen" | "admin"
   const [activeTab, setActiveTab] = useState("dashboard");
   const [userPoints, setUserPoints] = useState(350);
   const [theme, setTheme] = useState("dark");
@@ -32,6 +33,10 @@ export default function Home() {
         if (user) {
           setCurrentUser(user);
           setUserPoints(user.total_reward_points || 350);
+          if (user.role === "admin") {
+            setPortalMode("admin");
+            setActiveTab("iot-bins");
+          }
         }
       } catch (err) {
         console.warn("Could not fetch logged-in user profile:", err);
@@ -61,11 +66,17 @@ export default function Home() {
     if (user && user.total_reward_points !== undefined) {
       setUserPoints(user.total_reward_points);
     }
+    if (user && user.role === "admin") {
+      setPortalMode("admin");
+      setActiveTab("iot-bins");
+    }
   };
 
   const handleLogout = () => {
     removeToken();
     setCurrentUser(null);
+    setPortalMode("citizen");
+    setActiveTab("dashboard");
   };
 
   const urgentBinsCount = bins.filter(b => b.fillLevel >= 85).length;
@@ -75,6 +86,8 @@ export default function Home() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        portalMode={portalMode}
+        setPortalMode={setPortalMode}
         userPoints={userPoints}
         currentUser={currentUser}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
@@ -83,8 +96,58 @@ export default function Home() {
         toggleTheme={toggleTheme}
       />
 
+      {portalMode === "admin" && (
+        <div style={{
+          margin: "0 16px 16px 16px",
+          padding: "10px 20px",
+          borderRadius: "12px",
+          background: "linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)",
+          border: "1px solid rgba(99, 102, 241, 0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "12px"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{
+              background: "#6366f1",
+              color: "#fff",
+              fontSize: "0.7rem",
+              fontWeight: 800,
+              padding: "4px 8px",
+              borderRadius: "6px",
+              textTransform: "uppercase"
+            }}>
+              Municipal Command Center
+            </span>
+            <span style={{ fontSize: "0.85rem", color: "var(--text-primary)", fontWeight: 600 }}>
+              Viewing Municipal Waste Management, Fleet Dispatch & ESG Analytics Portal
+            </span>
+          </div>
+          {(!currentUser || currentUser.role !== "admin") && (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              style={{
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                color: "#6366f1",
+                background: "#ffffff",
+                border: "none",
+                padding: "6px 12px",
+                borderRadius: "8px",
+                cursor: "pointer"
+              }}
+            >
+              Sign in as Admin
+            </button>
+          )}
+        </div>
+      )}
+
       <main style={{ flex: 1 }}>
-        {activeTab === "dashboard" && (
+        {/* CITIZEN PORTAL VIEWS */}
+        {portalMode === "citizen" && activeTab === "dashboard" && (
           <>
             <Hero
               setActiveTab={setActiveTab}
@@ -95,27 +158,15 @@ export default function Home() {
           </>
         )}
 
-        {activeTab === "scanner" && (
+        {portalMode === "citizen" && activeTab === "scanner" && (
           <AiScanner onAddPoints={handleAddPoints} currentUser={currentUser} />
         )}
 
-        {activeTab === "iot-bins" && (
-          <IotBins
-            bins={bins}
-            setBins={setBins}
-            onDispatchRoute={() => setActiveTab("routes")}
-          />
+        {portalMode === "citizen" && activeTab === "map" && (
+          <MapPage />
         )}
 
-        {activeTab === "routes" && (
-          <RouteOptimizer bins={bins} setBins={setBins} />
-        )}
-
-        {activeTab === "analytics" && (
-          <EsgAnalytics />
-        )}
-
-        {activeTab === "rewards" && (
+        {portalMode === "citizen" && activeTab === "rewards" && (
           <EcoRewards 
             userPoints={userPoints} 
             setUserPoints={setUserPoints}
@@ -124,13 +175,28 @@ export default function Home() {
           />
         )}
 
-        {activeTab === "assistant" && (
+        {portalMode === "citizen" && activeTab === "assistant" && (
           <WasteBot />
         )}
-        {activeTab === "map" && (
-          <MapPage />
+
+        {/* MUNICIPAL ADMIN PORTAL VIEWS */}
+        {portalMode === "admin" && activeTab === "iot-bins" && (
+          <IotBins
+            bins={bins}
+            setBins={setBins}
+            onDispatchRoute={() => setActiveTab("routes")}
+          />
         )}
 
+        {portalMode === "admin" && activeTab === "routes" && (
+          <RouteOptimizer bins={bins} setBins={setBins} />
+        )}
+
+        {portalMode === "admin" && activeTab === "analytics" && (
+          <EsgAnalytics />
+        )}
+
+        {/* SHARED VIEWS */}
         {activeTab === "profile" && (
           <UserProfile currentUser={currentUser} onLogout={handleLogout} />
         )}

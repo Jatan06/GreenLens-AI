@@ -158,7 +158,16 @@ export default function UserProfile({ currentUser, onLogout }) {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "6px" }}><Settings size={14} /> Role</span>
-                  <span className="badge badge-info">{profile?.is_superuser ? "Admin" : "User"}</span>
+                  <span className="badge badge-info" style={{
+                    background: profile?.role === "admin" ? "rgba(99, 102, 241, 0.2)" : "rgba(16, 185, 129, 0.2)",
+                    color: profile?.role === "admin" ? "#818cf8" : "#10b981",
+                    border: profile?.role === "admin" ? "1px solid rgba(99, 102, 241, 0.4)" : "1px solid rgba(16, 185, 129, 0.4)",
+                    padding: "2px 8px",
+                    borderRadius: "6px",
+                    fontWeight: 700
+                  }}>
+                    {profile?.role ? profile.role.toUpperCase() : "CITIZEN"}
+                  </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "6px" }}><Shield size={14} /> Joined</span>
