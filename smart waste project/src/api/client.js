@@ -87,6 +87,13 @@ export async function getCurrentUser() {
   }
 }
 
+export async function askWasteAssistant(question) {
+  return request("/api/v1/assistant/ask", {
+    method: "POST",
+    body: JSON.stringify({ question }),
+  });
+}
+
 // 👤 USER MANAGEMENT & LEADERBOARD APIs
 export async function getUserProfile() {
   return request("/api/v1/users/profile");
