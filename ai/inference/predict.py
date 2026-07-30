@@ -13,15 +13,62 @@ from utils.recommend import RecommendationEngine
 engine = RecommendationEngine()
 
 model = None
+
+# Comprehensive mapping of standard COCO classes to GreenLens waste taxonomy
+COCO_WASTE_MAP = {
+    # Plastics & Bottles
+    "bottle": "plastic bottle",
+    "cup": "plastic bottle",
+    "wine glass": "glass bottle",
+    
+    # E-Waste
+    "cell phone": "mobile phone",
+    "laptop": "laptop",
+    "keyboard": "keyboard",
+    "mouse": "e_waste",
+    "remote": "e_waste",
+    "tv": "monitor",
+    
+    # Organic / Food Waste
+    "banana": "banana peel",
+    "apple": "fruit peels",
+    "orange": "fruit peels",
+    "broccoli": "food waste",
+    "carrot": "food waste",
+    "sandwich": "food waste",
+    "donut": "food waste",
+    "cake": "food waste",
+    
+    # Paper & Cardboard
+    "book": "paper",
+    "paper": "paper",
+    
+    # Cans / Metal / Containers
+    "can": "can",
+    "bowl": "plastic bottle"
+}
+
 # Attempt YOLO model load quietly without raising OS DLL errors
 try:
-    # Disable PyTorch / Ultralytics verbose warning outputs
     os.environ["YOLO_VERBOSE"] = "False"
     # pyrefly: ignore [missing-import]
     from ultralytics import YOLO
-    MODEL_PATH = BASE_DIR / "models" / "best.pt"
-    if MODEL_PATH.exists():
-        model = YOLO(str(MODEL_PATH))
+    
+    # Priority 1: Check for custom fine-tuned waste weights
+    CUSTOM_MODEL_PATH = BASE_DIR / "models" / "best.pt"
+    # Priority 2: Standard YOLO pre-trained model
+    PRETRAINED_MODEL_PATH = BASE_DIR / "yolov8n.pt"
+    INFERENCE_MODEL_PATH = BASE_DIR / "inference" / "yolov8n.pt"
+    
+    if CUSTOM_MODEL_PATH.exists():
+        model = YOLO(str(CUSTOM_MODEL_PATH))
+    elif PRETRAINED_MODEL_PATH.exists():
+        model = YOLO(str(PRETRAINED_MODEL_PATH))
+    elif INFERENCE_MODEL_PATH.exists():
+        model = YOLO(str(INFERENCE_MODEL_PATH))
+    else:
+        # Auto-download base yolov8n if no local weights exist
+        model = YOLO("yolov8n.pt")
 except Exception:
     model = None
 
@@ -59,19 +106,34 @@ def predict(image_path):
 
     if model is not None:
         try:
-            results = model(str(image_path))
-            annotated_image = results[0].plot()
-            cv2.imwrite(str(output_path), annotated_image)
+            results = model(str(image_path), conf=0.25)
+            annotated = img.copy() if img is not None else np.zeros((h, w, 3), dtype=np.uint8)
+
             for result in results:
                 for box in result.boxes:
-                    class_name = result.names[int(box.cls)]
+                    raw_class_name = result.names[int(box.cls)].lower()
                     x1, y1, x2, y2 = box.xyxy[0].tolist()
                     confidence = round(float(box.conf), 2)
-                    if confidence < 0.5:
+                    
+                    # Map COCO raw name to waste class if available
+                    waste_class = COCO_WASTE_MAP.get(raw_class_name, raw_class_name)
+                    info = engine.get_info(waste_class)
+
+                    # Only keep detections that match known waste items or recognized categories
+                    if info["category"] == "Unknown" and waste_class not in engine.data:
                         continue
-                    info = engine.get_info(class_name)
+
+                    color = get_bin_color_bgr(info.get("bin", "Blue"))
+
+                    # Draw colored bounding box and custom label on image
+                    cv2.rectangle(annotated, (int(x1), int(y1)), (int(x2), int(y2)), color, 3)
+                    label = f"{waste_class.title()} ({int(confidence * 100)}%)"
+                    (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+                    cv2.rectangle(annotated, (int(x1), int(y1) - th - 10), (int(x1) + tw + 10, int(y1)), color, -1)
+                    cv2.putText(annotated, label, (int(x1) + 5, int(y1) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+
                     detections.append({
-                        "name": class_name,
+                        "name": waste_class,
                         "confidence": confidence,
                         "bounding_box": {
                             "x1": round(x1, 2),
@@ -91,52 +153,14 @@ def predict(image_path):
                         "tips": info.get("tips", []),
                         "decomposition_time": info.get("decomposition_time", "")
                     })
-        except Exception:
-            model = None
 
-    if not detections:
-        # High-performance CV waste analyzer fallback with bounding boxes
-        sample_items = ["plastic bottle"]
-        
-        # Calculate dynamic bounding box coordinates based on input image dimensions
-        box_w = int(w * 0.5)
-        box_h = int(h * 0.6)
-        x1 = int((w - box_w) / 2)
-        y1 = int((h - box_h) / 2)
-        x2 = x1 + box_w
-        y2 = y1 + box_h
+            cv2.imwrite(str(output_path), annotated)
+        except Exception as e:
+            print(f"Prediction error: {e}")
 
-        annotated = img.copy() if img is not None else np.zeros((h, w, 3), dtype=np.uint8)
-
-        for class_name in sample_items:
-            info = engine.get_info(class_name)
-            color = get_bin_color_bgr(info.get("bin", "Blue"))
-            
-            # Draw colored bounding box and label overlay on annotated image
-            cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 3)
-            label = f"{class_name.title()} (95%)"
-            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
-            cv2.rectangle(annotated, (x1, y1 - th - 10), (x1 + tw + 10, y1), color, -1)
-            cv2.putText(annotated, label, (x1 + 5, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
-            detections.append({
-                "name": class_name,
-                "confidence": 0.95,
-                "bounding_box": {"x1": float(x1), "y1": float(y1), "x2": float(x2), "y2": float(y2)},
-                "category": info["category"],
-                "subcategory": info.get("subcategory", ""),
-                "material": info.get("material", ""),
-                "bin": info["bin"],
-                "reward": info["reward"],
-                "eco_score": info.get("eco_score", 50),
-                "carbon_saved": info["carbon_saved"],
-                "description": info["description"],
-                "can_become": info.get("can_become", []),
-                "tips": info.get("tips", []),
-                "decomposition_time": info.get("decomposition_time", "")
-            })
-        
-        cv2.imwrite(str(output_path), annotated)
+    # Write fallback original/clean image to output_path if no detection visual was generated
+    if not output_path.exists() and img is not None:
+        cv2.imwrite(str(output_path), img)
 
     for det in detections:
         class_name = det["name"]
@@ -170,4 +194,4 @@ def predict(image_path):
         "summary": summary,
         "detections": detections,
         "annotated_image": "/outputs/prediction.jpg"
-    }
+    }

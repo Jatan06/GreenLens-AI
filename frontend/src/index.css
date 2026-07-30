@@ -393,3 +393,22 @@ button { cursor: pointer; font-family: inherit; border: none; outline: none; }
 .flex-col    { flex-direction: column; }
 .items-center{ align-items: center; }
 .justify-between { justify-content: space-between; }
+
+/* ── Auth Inputs ── */
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.auth-input:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.25);
+}
+

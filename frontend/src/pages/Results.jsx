@@ -1,3 +1,5 @@
+import { useLocation, Link } from "react-router-dom";
+
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const CATEGORY_META = {
@@ -100,21 +102,31 @@ function DetectionCard({ item }) {
 
 /* ── Results Page ── */
 export default function Results() {
-  const raw = sessionStorage.getItem("glResult");
-  const previewUrl = sessionStorage.getItem("glPreview");
+  const location = useLocation();
+  
+  let data = location.state?.result;
+  let previewUrl = location.state?.imagePreview;
 
-  if (!raw) {
+  if (!data) {
+    const raw = sessionStorage.getItem("glResult");
+    previewUrl = sessionStorage.getItem("glPreview");
+    if (raw) {
+      try { data = JSON.parse(raw); } catch { data = null; }
+    }
+  }
+
+  if (!data) {
     return (
       <main className="page page-enter" style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
         <span style={{ fontSize: "3rem" }}>🤔</span>
         <p style={{ color: "var(--text-muted)" }}>No scan results found.</p>
-        <a href="/" className="btn btn-primary">Go Scan Something</a>
+        <Link to="/" className="btn btn-primary">Go Scan Something</Link>
       </main>
     );
   }
 
-  const data = JSON.parse(raw);
   const { overall, detections = [], recycling_centers = [] } = data;
+
   const annotatedUrl = data.annotated_image ? `${API_BASE}${data.annotated_image}` : null;
 
   // Track reward in localStorage

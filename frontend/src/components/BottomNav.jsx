@@ -32,6 +32,16 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    path: "/profile",
+    label: "Profile",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function BottomNav() {
@@ -43,7 +53,7 @@ export default function BottomNav() {
       {NAV_ITEMS.map((item) => (
         <button
           key={item.path}
-          className={`nav-item${location.pathname === item.path ? " active" : ""}`}
+          className={`nav-item${location.pathname === item.path || (item.path === "/profile" && location.pathname === "/auth") ? " active" : ""}`}
           onClick={() => navigate(item.path)}
           aria-label={item.label}
         >
@@ -54,3 +64,4 @@ export default function BottomNav() {
     </nav>
   );
 }
+

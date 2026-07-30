@@ -1,11 +1,13 @@
 import { useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { predictWaste } from "../api/client";
+import { useAuth } from "../context/AuthContext";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function Scan() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fileRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -78,15 +80,20 @@ export default function Scan() {
     if (!capturedFile) return;
     setLoading(true);
     setError(null);
+
     try {
-      const { lat, lng } = await getLocation();
-      const data = await predictWaste(capturedFile, lat, lng);
-      // Store results + centers in sessionStorage for Results page
-      sessionStorage.setItem("glResult", JSON.stringify(data));
-      sessionStorage.setItem("glPreview", preview);
-      navigate("/results");
+      const loc = await getLocation();
+      const result = await predictWaste(capturedFile, loc.lat, loc.lng);
+
+      if (!result.detections || result.detections.length === 0) {
+        setError("No waste objects detected in this image. Try taking a clearer photo close to the item.");
+        setLoading(false);
+        return;
+      }
+
+      navigate("/results", { state: { result, imagePreview: preview } });
     } catch (err) {
-      setError(err.message || "Something went wrong. Please try again.");
+      setError(err.message || "Failed to analyze image. Please ensure the backend is running.");
     } finally {
       setLoading(false);
     }
@@ -103,16 +110,39 @@ export default function Scan() {
   return (
     <main className="page page-enter" style={{ paddingBottom: "7rem" }}>
       {/* Header */}
-      <header style={{ marginBottom: "2rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.35rem" }}>
-          <span style={{ fontSize: "1.6rem" }}>🌿</span>
-          <h1 style={{ fontSize: "1.5rem", fontWeight: 800, background: "linear-gradient(135deg, #22c55e, #4ade80)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            GreenLens AI
-          </h1>
+      <header style={{ marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.2rem" }}>
+              <span style={{ fontSize: "1.6rem" }}>🌿</span>
+              <h1 style={{ fontSize: "1.5rem", fontWeight: 800, background: "linear-gradient(135deg, #22c55e, #4ade80)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                GreenLens AI
+              </h1>
+            </div>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.825rem" }}>
+              Scan any waste to identify, classify &amp; earn rewards
+            </p>
+          </div>
+
+          <Link
+            to={user ? "/profile" : "/auth"}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
+              padding: "0.4rem 0.8rem",
+              borderRadius: "var(--radius-xl)",
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              color: user ? "var(--green-light)" : "var(--text-muted)",
+            }}
+          >
+            <span>{user ? "👤" : "🔑"}</span>
+            <span>{user ? user.username : "Sign In"}</span>
+          </Link>
         </div>
-        <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
-          Scan any waste to identify, classify &amp; earn rewards
-        </p>
       </header>
 
       {/* ── IDLE STATE ── */}
